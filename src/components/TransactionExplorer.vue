@@ -208,7 +208,16 @@ export default {
               </a>
               <span v-else>-</span>
             </td>
-            <td>{{ log.state }}</td>
+            <td>
+              <span
+                class="uk-label"
+                :class="{
+                  success: log.state === 'success',
+                  pending: log.state === 'pending',
+                }"
+                >{{ log.state }}</span
+              >
+            </td>
           </tr>
         </tbody>
       </table>
@@ -339,5 +348,19 @@ th {
 .icon {
   width: 15px;
   margin-right: 5px;
+}
+
+.uk-label {
+  border-radius: 10px;
+  font-size: 0.6rem;
+}
+
+.success {
+  background-color: #32d296;
+  color: #fff;
+}
+.pending {
+  background-color: #faa05a;
+  color: #fff;
 }
 </style>
