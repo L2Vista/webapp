@@ -2,6 +2,7 @@
 import {
   getLogArray,
   getExplorerUrl,
+  getDateTime,
   NUM_OF_LOGS,
   CHAINS,
   PROTOCOLS,
@@ -52,7 +53,7 @@ export default {
         .then((res) => {
           if (!res.status) console.error("load history 실패 ", res);
           // 성공했을 경우
-          console.log("load history 성공", res);
+          //console.log("load history 성공", res);
           this.logArray = []; // Clear
           for (let i = 0; i < res.data.data.txRequested.length; i++) {
             let log = res.data.data.txRequested[i];
@@ -65,7 +66,7 @@ export default {
             let state = log.to.hash ? "success" : "pending";
 
             this.logArray.push({
-              timestamp: timestamp,
+              timestamp: getDateTime(timestamp),
               from: from,
               fromchain: fromchain,
               to: to,
@@ -90,7 +91,7 @@ export default {
         .get(request)
         .then((res) => {
           // 성공했을 경우
-          console.log("getCount 성공", res);
+          //console.log("getCount 성공", res);
           return res.data.data;
         })
         .catch((res) => {
