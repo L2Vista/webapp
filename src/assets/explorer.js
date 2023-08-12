@@ -6,8 +6,8 @@ const CHAINS = [
     { name: 'Zora', id: '999' },
 ];
 const PROTOCOLS = [
-    { name: 'ccip', id: 'ccip' },
-    { name: 'hyperlane', id: 'hyperlane' },
+    { name: 'CCIP', id: 'ccip' },
+    { name: 'Hyperlane', id: 'hyperlane' },
 ];
 
 let logArray = [];
@@ -22,6 +22,16 @@ function getChainID(name) {
         if (name.toLowerCase() === chain.name.toLowerCase()) {
             console.log("chainid", chain.id)
             return chain.id;
+        }
+    }
+    return "null";
+}
+
+function getProtocolName(id) {
+    for (let i = 0; i < PROTOCOLS.length; i++) {
+        let protocol = PROTOCOLS[i];
+        if (id === protocol.id) {
+            return protocol.name;
         }
     }
     return "null";
@@ -60,4 +70,4 @@ function getDateTime(t) {
     return year + "-" + month.substr(-2) + "-" + day.substr(-2) + " " + hour.substr(-2) + ":" + minute.substr(-2) + ":" + second.substr(-2);
 }
 
-export { NUM_OF_LOGS, CHAINS, PROTOCOLS, getLogArray, getExplorerUrl, getDateTime, getChainID };
+export { NUM_OF_LOGS, CHAINS, PROTOCOLS, getLogArray, getExplorerUrl, getDateTime, getChainID, getProtocolName };

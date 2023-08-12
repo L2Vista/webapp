@@ -4,6 +4,7 @@ import {
   getExplorerUrl,
   getDateTime,
   getChainID,
+  getProtocolName,
   NUM_OF_LOGS,
   CHAINS,
   PROTOCOLS,
@@ -191,6 +192,9 @@ export default {
         });
       this.loading = false;
     },
+    getProtocolName(id) {
+      return getProtocolName(id);
+    },
   },
 };
 </script>
@@ -290,7 +294,7 @@ export default {
             </td>
             <td>
               <img class="icon" :src="`/protocol/${log.protocol}.png`" />{{
-                log.protocol
+                getProtocolName(log.protocol)
               }}
             </td>
             <td>
