@@ -1,15 +1,28 @@
 <script>
-import { getLogArray, getExplorerUrl, NUM_OF_LOGS } from "../assets/explorer.js";
+import {
+  getLogArray,
+  getExplorerUrl,
+  NUM_OF_LOGS,
+  CHAINS,
+  PROTOCOLS,
+} from "../assets/explorer.js";
 import { RPC_ENDPOINT } from "../assets/env.js";
 import axios from "axios";
 
 export default {
   data() {
     return {
+      CHAINS: CHAINS,
+      PROTOCOLS: PROTOCOLS,
+
       logArray: getLogArray(),
       count: 0,
       page_current: 1,
       page_max: 0,
+
+      filter_from: "all",
+      filter_protocol: "all",
+      filter_to: "all",
     };
   },
   mounted() {
@@ -21,11 +34,19 @@ export default {
       this.count = await this.getCount();
       this.page_max = Math.ceil(this.count / NUM_OF_LOGS);
     },
-    async loadLogs(amount, skip, tochain = null, fromchain = null, hash = null) {
+    async loadLogs(
+      amount,
+      skip,
+      tochain = null,
+      fromchain = null,
+      hash = null,
+      protocol = null
+    ) {
       let request = RPC_ENDPOINT + "tx?amount=" + amount + "&skip=" + skip;
-      if (tochain !== null) request += "&tochain=" + tochain;
-      if (fromchain !== null) request += "&fromchain=" + fromchain;
+      if (tochain !== null && tochain !== "all") request += "&tochain=" + tochain;
+      if (fromchain !== null && fromchain !== "all") request += "&fromchain=" + fromchain;
       if (hash !== null) request += "&hash=" + hash;
+      if (protocol !== null && protocol !== "all") request += "&category=" + protocol;
       await axios
         .get(request)
         .then((res) => {
@@ -59,11 +80,12 @@ export default {
           console.error("load history 실패 ", res);
         });
     },
-    async getCount(tochain = null, fromchain = null, hash = null) {
+    async getCount(tochain = null, fromchain = null, hash = null, protocol = null) {
       let request = RPC_ENDPOINT + "txcount?";
-      if (tochain !== null) request += "&tochain=" + tochain;
-      if (fromchain !== null) request += "&fromchain=" + fromchain;
+      if (tochain !== null && tochain !== "all") request += "&tochain=" + tochain;
+      if (fromchain !== null && fromchain !== "all") request += "&fromchain=" + fromchain;
       if (hash !== null) request += "&hash=" + hash;
+      if (protocol !== null && protocol !== "all") request += "&category=" + protocol;
       return await axios
         .get(request)
         .then((res) => {
@@ -78,6 +100,7 @@ export default {
         });
     },
     async moveTo(page) {
+      this.page_current = page;
       await this.loadLogs(NUM_OF_LOGS, (page - 1) * NUM_OF_LOGS);
     },
     getShortAddr(addr) {
@@ -87,6 +110,24 @@ export default {
     getExplorerUrl(chainid) {
       let url = getExplorerUrl(chainid);
       return url;
+    },
+    async applyFilter() {
+      this.page_current = 1;
+      await this.loadLogs(
+        NUM_OF_LOGS,
+        (this.page_current - 1) * NUM_OF_LOGS,
+        this.filter_to,
+        this.filter_from,
+        null,
+        this.filter_protocol
+      );
+      this.count = await this.getCount(
+        this.filter_to,
+        this.filter_from,
+        null,
+        this.filter_protocol
+      );
+      this.page_max = Math.ceil(this.count / NUM_OF_LOGS);
     },
   },
 };
@@ -98,6 +139,35 @@ export default {
       <div class="searchbar">
         <input type="text" placeholder="Search by address" aria-label="Input" />
         <img class="search-icon" src="/search-icon.svg" />
+      </div>
+    </div>
+    <div class="filter-container">
+      <div class="filter uk-width-small@s">
+        <div class="filter-title"><span>From</span></div>
+        <select v-model="filter_from" class="uk-select" @change="applyFilter">
+          <option value="all">All</option>
+          <option v-for="chain in CHAINS" :key="chain.id" :value="chain.id">
+            {{ chain.name }}
+          </option>
+        </select>
+      </div>
+      <div class="filter uk-width-small@s">
+        <div class="filter-title"><span>Protocol</span></div>
+        <select v-model="filter_protocol" class="uk-select" @change="applyFilter">
+          <option value="all">All</option>
+          <option v-for="protocol in PROTOCOLS" :key="protocol.id" :value="protocol.id">
+            {{ protocol.name }}
+          </option>
+        </select>
+      </div>
+      <div class="filter uk-width-small@s">
+        <div class="filter-title"><span>To</span></div>
+        <select v-model="filter_to" class="uk-select" @change="applyFilter">
+          <option value="all">All</option>
+          <option v-for="chain in CHAINS" :key="chain.id" :value="chain.id">
+            {{ chain.name }}
+          </option>
+        </select>
       </div>
     </div>
     <div class="table uk-overflow-auto">
@@ -144,15 +214,15 @@ export default {
       </table>
     </div>
     <div class="page-container">
-      <span
-        class="page"
-        v-for="index in page_max"
-        :key="index"
-        :class="{ activepage: index === page_current }"
-        @click="moveTo(index)"
-      >
-        {{ index }}
-      </span>
+      <div class="page" v-for="index in page_max" :key="index">
+        <span
+          class="page-span"
+          :class="{ activepage: index === page_current }"
+          @click="moveTo(index)"
+        >
+          {{ index }}
+        </span>
+      </div>
     </div>
   </div>
 </template>
@@ -164,11 +234,47 @@ export default {
 .searchbar {
   padding: 0px 20px 0px 20px;
   background-color: rgba(217, 217, 217, 0.537);
-  border: 0px solid rgba(217, 217, 217, 0.537);
+  outline: 2px solid rgb(236, 114, 232);
   height: 50px;
   border-radius: 30px 30px 30px 30px;
 }
 
+.filter {
+  display: inline-block;
+  margin-top: 10px;
+}
+
+@media (min-width: 640px) {
+  .filter {
+    padding-right: 10px;
+  }
+}
+
+.filter-title {
+  padding: 7px 0px 0px 20px;
+  background-color: rgba(217, 217, 217, 0.537);
+  border-radius: 20px 0px 0px 20px;
+  height: 35px;
+  font-size: 0.75rem;
+  width: 70px;
+  display: inline-block;
+}
+.filter-title > span {
+  position: relative;
+  top: 1px;
+  font-weight: 500;
+}
+.filter > .uk-select {
+  padding: 0px 20px 0px 20px;
+  background-color: rgba(217, 217, 217, 0.537);
+  border: 0px solid rgba(217, 217, 217, 0.537);
+  border-radius: 0px 20px 20px 0px;
+  height: 35px;
+  font-size: 0.75rem;
+  display: inline-block;
+  width: calc(100% - 70px);
+  cursor: pointer;
+}
 .page-container {
   padding: 0px 20px 0px 20px;
   height: 50px;
@@ -177,6 +283,10 @@ export default {
 }
 
 .page {
+  padding: 5px;
+  display: inline;
+}
+.page-span {
   cursor: pointer;
 }
 .activepage {

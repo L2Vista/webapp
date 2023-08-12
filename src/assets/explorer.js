@@ -1,4 +1,15 @@
 const NUM_OF_LOGS = 10; // per page
+const CHAINS = [
+    { name: 'Base', id: '84531' },
+    { name: 'Mode', id: '919' },
+    { name: 'Optimism', id: '420' },
+    { name: 'Zora', id: '999' },
+];
+const PROTOCOLS = [
+    { name: 'ccip', id: 'ccip' },
+    { name: 'hyperlane', id: 'hyperlane' },
+];
+
 let logArray = [];
 
 function getLogArray() {
@@ -27,4 +38,4 @@ function getExplorerUrl(chainid) {
     return "";
 }
 
-export { NUM_OF_LOGS, getLogArray, getExplorerUrl };
+export { NUM_OF_LOGS, CHAINS, PROTOCOLS, getLogArray, getExplorerUrl };
