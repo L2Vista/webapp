@@ -1,3 +1,4 @@
 const RPC_ENDPOINT = "";
+const AI_RPC_ENDPOINT = "";
 
-export { RPC_ENDPOINT };
+export { RPC_ENDPOINT, AI_RPC_ENDPOINT };

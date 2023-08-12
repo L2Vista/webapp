@@ -16,6 +16,17 @@ function getLogArray() {
     return logArray;
 }
 
+function getChainID(name) {
+    for (let i = 0; i < CHAINS.length; i++) {
+        let chain = CHAINS[i];
+        if (name.toLowerCase() === chain.name.toLowerCase()) {
+            console.log("chainid", chain.id)
+            return chain.id;
+        }
+    }
+    return "null";
+}
+
 function getExplorerUrl(chainid) {
     switch (chainid) {
         // mode
@@ -49,4 +60,4 @@ function getDateTime(t) {
     return year + "-" + month.substr(-2) + "-" + day.substr(-2) + " " + hour.substr(-2) + ":" + minute.substr(-2) + ":" + second.substr(-2);
 }
 
-export { NUM_OF_LOGS, CHAINS, PROTOCOLS, getLogArray, getExplorerUrl, getDateTime };
+export { NUM_OF_LOGS, CHAINS, PROTOCOLS, getLogArray, getExplorerUrl, getDateTime, getChainID };

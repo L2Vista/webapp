@@ -4333,10 +4333,9 @@ select.uk-form-width-xsmall {
 .uk-notification-message {
   position: relative;
   padding: 15px;
-  background: #f8f8f8;
-  color: #666;
-  font-size: 1.25rem;
-  line-height: 1.4;
+  background: rgba(236, 114, 232, 0.9);
+  color: black;
+  font-size: 0.8rem;
   cursor: pointer;
 }
 * + .uk-notification-message {

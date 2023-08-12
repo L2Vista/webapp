@@ -3,11 +3,12 @@ import {
   getLogArray,
   getExplorerUrl,
   getDateTime,
+  getChainID,
   NUM_OF_LOGS,
   CHAINS,
   PROTOCOLS,
 } from "../assets/explorer.js";
-import { RPC_ENDPOINT } from "../assets/env.js";
+import { RPC_ENDPOINT, AI_RPC_ENDPOINT } from "../assets/env.js";
 import axios from "axios";
 
 export default {
@@ -21,9 +22,14 @@ export default {
       page_current: 1,
       page_max: 0,
 
-      filter_from: "all",
-      filter_protocol: "all",
-      filter_to: "all",
+      filter_from: "null",
+      filter_protocol: "null",
+      filter_to: "null",
+      filter_address: "null",
+      filter_hash: "null",
+
+      search_text: "",
+      loading: false,
     };
   },
   mounted() {
@@ -38,16 +44,18 @@ export default {
     async loadLogs(
       amount,
       skip,
-      tochain = null,
-      fromchain = null,
-      hash = null,
-      protocol = null
+      tochain = "null",
+      fromchain = "null",
+      hash = "null",
+      protocol = "null",
+      address = "null"
     ) {
       let request = RPC_ENDPOINT + "tx?amount=" + amount + "&skip=" + skip;
-      if (tochain !== null && tochain !== "all") request += "&tochain=" + tochain;
-      if (fromchain !== null && fromchain !== "all") request += "&fromchain=" + fromchain;
-      if (hash !== null) request += "&hash=" + hash;
-      if (protocol !== null && protocol !== "all") request += "&category=" + protocol;
+      if (tochain !== "null") request += "&tochain=" + tochain;
+      if (fromchain !== "null") request += "&fromchain=" + fromchain;
+      if (hash !== "null") request += "&hash=" + hash;
+      if (protocol !== "null") request += "&category=" + protocol;
+      if (address !== "null") request += "&address=" + address;
       await axios
         .get(request)
         .then((res) => {
@@ -81,12 +89,19 @@ export default {
           console.error("load history 실패 ", res);
         });
     },
-    async getCount(tochain = null, fromchain = null, hash = null, protocol = null) {
+    async getCount(
+      tochain = "null",
+      fromchain = "null",
+      hash = "null",
+      protocol = "null",
+      address = "null"
+    ) {
       let request = RPC_ENDPOINT + "txcount?";
-      if (tochain !== null && tochain !== "all") request += "&tochain=" + tochain;
-      if (fromchain !== null && fromchain !== "all") request += "&fromchain=" + fromchain;
-      if (hash !== null) request += "&hash=" + hash;
-      if (protocol !== null && protocol !== "all") request += "&category=" + protocol;
+      if (tochain !== "null") request += "&tochain=" + tochain;
+      if (fromchain !== "null") request += "&fromchain=" + fromchain;
+      if (hash !== "null") request += "&hash=" + hash;
+      if (protocol !== "null") request += "&category=" + protocol;
+      if (address !== "null") request += "&address=" + address;
       return await axios
         .get(request)
         .then((res) => {
@@ -119,16 +134,62 @@ export default {
         (this.page_current - 1) * NUM_OF_LOGS,
         this.filter_to,
         this.filter_from,
-        null,
-        this.filter_protocol
+        this.filter_hash,
+        this.filter_protocol,
+        this.filter_address
       );
       this.count = await this.getCount(
         this.filter_to,
         this.filter_from,
-        null,
-        this.filter_protocol
+        this.filter_hash,
+        this.filter_protocol,
+        this.filter_address
       );
       this.page_max = Math.ceil(this.count / NUM_OF_LOGS);
+    },
+    async clearAddrFilter() {
+      this.filter_address = "null";
+      await this.applyFilter();
+    },
+    async clearHashFilter() {
+      this.filter_hash = "null";
+      await this.applyFilter();
+    },
+    async postMsg(msg) {
+      console.log("postMsg", msg);
+      this.loading = true;
+      await axios
+        .post(
+          AI_RPC_ENDPOINT + "chat",
+          { human_input: msg },
+          {
+            header: {
+              "Context-Type": "application/json",
+            },
+          }
+        )
+        .then(async (res) => {
+          // 성공했을 경우
+          console.log("postMsg 성공", res);
+          let answer = res.data.ai_output;
+          let parsed = res.data.parsed;
+          this.filter_from = getChainID(parsed[0]);
+          this.filter_to = getChainID(parsed[1]);
+          this.filter_protocol = parsed[2];
+          this.filter_address = parsed[3];
+          this.filter_hash = parsed[4];
+          this.loading = false;
+          await this.applyFilter();
+          UIkit.notification("🙂 " + answer, { pos: "top-right" });
+        })
+        .catch((res) => {
+          // 실패했을 경우
+          this.typing = false;
+          console.error("실패 ", res);
+          UIkit.notification("Error!", { pos: "top-right" });
+          this.loading = false;
+        });
+      this.loading = false;
     },
   },
 };
@@ -138,15 +199,27 @@ export default {
   <div class="explorer-container">
     <div class="searchbar-container">
       <div class="searchbar">
-        <input type="text" placeholder="Search by address" aria-label="Input" />
-        <img class="search-icon" src="/search-icon.svg" />
+        <input
+          type="text"
+          v-model="search_text"
+          placeholder="🙂 Hi, how can I assist you today?"
+          aria-label="Input"
+          @keyup.enter="postMsg(search_text)"
+        />
+        <img
+          v-if="!loading"
+          class="search-icon"
+          src="/search-icon.svg"
+          @click="postMsg(search_text)"
+        />
+        <div v-if="loading" class="search-spinner" uk-spinner></div>
       </div>
     </div>
     <div class="filter-container">
       <div class="filter uk-width-small@s">
         <div class="filter-title"><span>From</span></div>
         <select v-model="filter_from" class="uk-select" @change="applyFilter">
-          <option value="all">All</option>
+          <option value="null">All</option>
           <option v-for="chain in CHAINS" :key="chain.id" :value="chain.id">
             {{ chain.name }}
           </option>
@@ -155,7 +228,7 @@ export default {
       <div class="filter uk-width-small@s">
         <div class="filter-title"><span>Protocol</span></div>
         <select v-model="filter_protocol" class="uk-select" @change="applyFilter">
-          <option value="all">All</option>
+          <option value="null">All</option>
           <option v-for="protocol in PROTOCOLS" :key="protocol.id" :value="protocol.id">
             {{ protocol.name }}
           </option>
@@ -164,15 +237,38 @@ export default {
       <div class="filter uk-width-small@s">
         <div class="filter-title"><span>To</span></div>
         <select v-model="filter_to" class="uk-select" @change="applyFilter">
-          <option value="all">All</option>
+          <option value="null">All</option>
           <option v-for="chain in CHAINS" :key="chain.id" :value="chain.id">
             {{ chain.name }}
           </option>
         </select>
       </div>
+      <div v-if="filter_address !== 'null'" class="filter filter-hover uk-width-small@s">
+        <div class="filter-title filter-title-small"><span>Addr</span></div>
+        <button
+          class="uk-button filter-button filter-button-small"
+          @click="clearAddrFilter"
+        >
+          <span class="filter-span">{{ getShortAddr(filter_address) }}</span
+          ><span class="filter-close">x</span>
+        </button>
+      </div>
+      <div v-if="filter_hash !== 'null'" class="filter filter-hover uk-width-small@s">
+        <div class="filter-title filter-title-small"><span>Hash</span></div>
+        <button
+          class="uk-button filter-button filter-button-small"
+          @click="clearHashFilter"
+        >
+          <span class="filter-span">{{ getShortAddr(filter_hash) }}</span
+          ><span class="filter-close">x</span>
+        </button>
+      </div>
     </div>
     <div class="table uk-overflow-auto">
-      <table class="uk-table uk-table-hover uk-table-divider">
+      <div v-if="loading" class="main-spinner">
+        <div uk-spinner="ratio: 3"></div>
+      </div>
+      <table v-if="!loading" class="uk-table uk-table-hover uk-table-divider">
         <thead>
           <tr>
             <th>Timestamp</th>
@@ -223,7 +319,7 @@ export default {
         </tbody>
       </table>
     </div>
-    <div class="page-container">
+    <div v-if="!loading" class="page-container">
       <div class="page" v-for="index in page_max" :key="index">
         <span
           class="page-span"
@@ -269,13 +365,18 @@ export default {
   width: 70px;
   display: inline-block;
 }
+
+.filter-title-small {
+  width: 50px;
+}
 .filter-title > span {
   position: relative;
   top: 1px;
   font-weight: 500;
 }
-.filter > .uk-select {
-  padding: 0px 20px 0px 20px;
+.filter > .uk-select,
+.uk-button {
+  padding: 0px 10px 0px 10px;
   background-color: rgba(217, 217, 217, 0.537);
   border: 0px solid rgba(217, 217, 217, 0.537);
   border-radius: 0px 20px 20px 0px;
@@ -284,6 +385,31 @@ export default {
   display: inline-block;
   width: calc(100% - 70px);
   cursor: pointer;
+  text-align: left;
+}
+
+.filter-button {
+  position: relative;
+  text-transform: none;
+}
+
+.filter-hover:hover {
+  opacity: 0.7;
+  transition: opacity 0.1s linear;
+}
+.filter-button-small {
+  width: calc(100% - 50px);
+}
+.filter-span {
+  position: relative;
+  top: -2px;
+}
+.filter-close {
+  position: absolute;
+  top: -2px;
+  right: 20px;
+  color: rgb(223, 103, 103);
+  font-weight: 500;
 }
 .page-container {
   padding: 0px 20px 0px 20px;
@@ -296,8 +422,9 @@ export default {
   padding: 5px;
   display: inline;
 }
-.page-span {
+.page-span:hover {
   cursor: pointer;
+  text-decoration: underline;
 }
 .activepage {
   font-weight: 600;
@@ -321,6 +448,19 @@ input::placeholder {
 textarea:focus,
 input:focus {
   outline: none;
+}
+
+.search-spinner {
+  position: absolute;
+  width: 18px;
+  right: 20px;
+  top: 15px;
+  opacity: 0.7;
+}
+
+.main-spinner {
+  text-align: center;
+  padding-top: 150px;
 }
 .search-icon {
   position: absolute;
