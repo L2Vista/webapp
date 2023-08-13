@@ -4332,11 +4332,12 @@ select.uk-form-width-xsmall {
 ========================================================================== */
 .uk-notification-message {
   position: relative;
-  padding: 15px;
+  padding: 25px;
   background: rgba(236, 114, 232, 0.9);
   color: black;
   font-size: 0.8rem;
   cursor: pointer;
+  word-wrap: break-word;
 }
 * + .uk-notification-message {
   margin-top: 10px;
@@ -4347,8 +4348,9 @@ select.uk-form-width-xsmall {
 .uk-notification-close {
   display: none;
   position: absolute;
-  top: 20px;
+  top: 15px;
   right: 15px;
+  color: black;
 }
 .uk-notification-message:hover .uk-notification-close {
   display: block;

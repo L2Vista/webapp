@@ -5,7 +5,8 @@ const CHAINS = [
     { name: 'Mode', id: '919' },
     { name: 'Optimism', id: '420' },
     { name: 'Zora', id: '999' },
-    { name: 'Sepolia', id: '11155111' }
+    { name: 'Sepolia', id: '11155111' },
+    { name: 'BNB', id: '97' },
 ];
 const PROTOCOLS = [
     { name: 'CCIP', id: 'ccip' },
@@ -56,6 +57,14 @@ function getExplorerUrl(chainid) {
         // base
         case '84531':
             return "https://base-goerli.blockscout.com/tx/";
+
+        // sepolia
+        case '11155111':
+            return "https://sepolia.etherscan.io/tx/";
+        
+        // bnb
+        case '97':
+            return "https://testnet.bscscan.com/tx/";
     }
 
     return "";

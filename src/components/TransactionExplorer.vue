@@ -22,6 +22,8 @@ export default {
       PROTOCOLS: PROTOCOLS,
 
       logArray: getLogArray(),
+      phishingArray: [],
+
       count: 0,
       page_current: 1,
 
@@ -56,7 +58,7 @@ export default {
       return Math.ceil(this.page_current / NUM_OF_PAGE) - 1;
     },
     page_prev: function () {
-      return (this.page_current_index + 1) * NUM_OF_PAGE + 1;
+      return (this.page_current_index - 1) * NUM_OF_PAGE + 1;
     },
     page_next: function () {
       return (this.page_current_index + 1) * NUM_OF_PAGE + 1;
@@ -70,8 +72,23 @@ export default {
   },
   methods: {
     async loadOnMounted(forcedLatency = 0) {
-      await this.loadLogs(NUM_OF_LOGS, (this.page_current - 1) * NUM_OF_LOGS, this.filter_to, this.filter_from, this.filter_hash, this.filter_protocol, this.filter_address, forcedLatency);
-      this.count = await this.getCount(this.filter_to, this.filter_from, this.filter_hash, this.filter_protocol, this.filter_address);
+      await this.loadLogs(
+        NUM_OF_LOGS,
+        (this.page_current - 1) * NUM_OF_LOGS,
+        this.filter_to,
+        this.filter_from,
+        this.filter_hash,
+        this.filter_protocol,
+        this.filter_address,
+        forcedLatency
+      );
+      this.count = await this.getCount(
+        this.filter_to,
+        this.filter_from,
+        this.filter_hash,
+        this.filter_protocol,
+        this.filter_address
+      );
       this.last_updated = await getCurrentDateTime();
     },
     async loadLogs(
@@ -82,7 +99,7 @@ export default {
       hash = "null",
       protocol = "null",
       address = "null",
-      forcedLatency = 0,
+      forcedLatency = 0
     ) {
       let request = RPC_ENDPOINT + "tx?amount=" + amount + "&skip=" + skip;
       if (tochain !== "null") request += "&tochain=" + tochain;
@@ -90,6 +107,7 @@ export default {
       if (hash !== "null") request += "&hash=" + hash;
       if (protocol !== "null") request += "&category=" + protocol;
       if (address !== "null") request += "&address=" + address;
+      console.log("request ", request);
       this.loading = true;
       await sleep(forcedLatency);
       await axios
@@ -97,7 +115,7 @@ export default {
         .then((res) => {
           if (!res.status) console.error("load history 실패 ", res);
           // 성공했을 경우
-          //console.log("load history 성공", res);
+          console.log("load history 성공", res);
           this.logArray = []; // Clear
           for (let i = 0; i < res.data.data.txRequested.length; i++) {
             let log = res.data.data.txRequested[i];
@@ -108,6 +126,8 @@ export default {
             let tochain = log.to ? log.to.chain : 0;
             let protocol = log.category ? log.category : "";
             let state = log.to.hash ? "success" : "pending";
+            let sender = log.sender ? log.sender : "";
+            let recipient = log.recipient ? log.recipient : "";
 
             this.logArray.push({
               timestamp: getDateTime(timestamp),
@@ -117,6 +137,8 @@ export default {
               tochain: tochain,
               protocol: protocol,
               state: state,
+              sender: sender,
+              recipient: recipient,
             });
           }
           this.loading = false;
@@ -156,7 +178,22 @@ export default {
     },
     async moveTo(page) {
       this.page_current = page;
-      await this.loadLogs(NUM_OF_LOGS, (page - 1) * NUM_OF_LOGS);
+      await this.loadLogs(
+        NUM_OF_LOGS,
+        (this.page_current - 1) * NUM_OF_LOGS,
+        this.filter_to,
+        this.filter_from,
+        this.filter_hash,
+        this.filter_protocol,
+        this.filter_address
+      );
+      this.count = await this.getCount(
+        this.filter_to,
+        this.filter_from,
+        this.filter_hash,
+        this.filter_protocol,
+        this.filter_address
+      );
     },
     getShortAddr(addr) {
       if (addr === null) return "";
@@ -347,9 +384,11 @@ export default {
                 :href="` ${getExplorerUrl(log.tochain) + log.to} `"
                 target="_blank"
               >
-                <img class="icon" :src="`/chain/${log.tochain}.png`" />{{
-                  getShortAddr(log.to)
-                }}
+                <img
+                  class="icon"
+                  :src="`/chain/${log.tochain}.png`"
+                  onerror="this.src='/chain/error.png'"
+                />{{ getShortAddr(log.to) }}
               </a>
               <span v-else>-</span>
             </td>
@@ -574,6 +613,7 @@ th {
   font-size: 0.8rem;
   font-weight: 500;
   color: var(--vt-c-black-soft);
+  padding-bottom: 10px;
 }
 .icon {
   width: 15px;
