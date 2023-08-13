@@ -11,6 +11,7 @@ import {
   NUM_OF_PAGE,
   CHAINS,
   PROTOCOLS,
+  STATES,
 } from "../assets/explorer.js";
 import { RPC_ENDPOINT, AI_RPC_ENDPOINT, PHISHING_RPC_ENDPOINT } from "../assets/env.js";
 import axios from "axios";
@@ -20,6 +21,7 @@ export default {
     return {
       CHAINS: CHAINS,
       PROTOCOLS: PROTOCOLS,
+      STATES: STATES,
 
       logArray: getLogArray(),
       phishingArray: [],
@@ -30,6 +32,7 @@ export default {
       filter_from: "null",
       filter_protocol: "null",
       filter_to: "null",
+      filter_success: "0", /* 0, 1, 2 */
       filter_address: "null",
       filter_hash: "null",
 
@@ -80,6 +83,7 @@ export default {
         this.filter_hash,
         this.filter_protocol,
         this.filter_address,
+        this.filter_success,
         forcedLatency
       );
       this.count = await this.getCount(
@@ -87,7 +91,8 @@ export default {
         this.filter_from,
         this.filter_hash,
         this.filter_protocol,
-        this.filter_address
+        this.filter_address,
+        this.filter_success
       );
       this.last_updated = await getCurrentDateTime();
     },
@@ -99,6 +104,7 @@ export default {
       hash = "null",
       protocol = "null",
       address = "null",
+      success = "null",
       forcedLatency = 0
     ) {
       let request = RPC_ENDPOINT + "tx?amount=" + amount + "&skip=" + skip;
@@ -107,7 +113,8 @@ export default {
       if (hash !== "null") request += "&hash=" + hash;
       if (protocol !== "null") request += "&category=" + protocol;
       if (address !== "null") request += "&address=" + address;
-      //console.log("request ", request);
+      if (success !== "null") request += "&success=" + success;
+      console.log("request ", request);
       this.loading = true;
       await sleep(forcedLatency);
       await axios
@@ -118,7 +125,7 @@ export default {
             return;
           }
           // 성공했을 경우
-          //console.log("load history 성공", res);
+          console.log("load history 성공", res);
           this.logArray = []; // Clear
           let phishingAddrList = [];
 
@@ -166,7 +173,8 @@ export default {
       fromchain = "null",
       hash = "null",
       protocol = "null",
-      address = "null"
+      address = "null",
+      success = "null"
     ) {
       let request = RPC_ENDPOINT + "txcount?";
       if (tochain !== "null") request += "&tochain=" + tochain;
@@ -174,6 +182,7 @@ export default {
       if (hash !== "null") request += "&hash=" + hash;
       if (protocol !== "null") request += "&category=" + protocol;
       if (address !== "null") request += "&address=" + address;
+      if (success !== "null") request += "&success=" + success;
       return await axios
         .get(request)
         .then((res) => {
@@ -238,14 +247,16 @@ export default {
         this.filter_from,
         this.filter_hash,
         this.filter_protocol,
-        this.filter_address
+        this.filter_address,
+        this.filter_success
       );
       this.count = await this.getCount(
         this.filter_to,
         this.filter_from,
         this.filter_hash,
         this.filter_protocol,
-        this.filter_address
+        this.filter_address,
+        this.filter_success
       );
     },
     getShortAddr(addr) {
@@ -265,14 +276,16 @@ export default {
         this.filter_from,
         this.filter_hash,
         this.filter_protocol,
-        this.filter_address
+        this.filter_address,
+        this.filter_success
       );
       this.count = await this.getCount(
         this.filter_to,
         this.filter_from,
         this.filter_hash,
         this.filter_protocol,
-        this.filter_address
+        this.filter_address,
+        this.filter_success
       );
     },
     async clearAddrFilter() {
@@ -374,6 +387,14 @@ export default {
           </option>
         </select>
       </div>
+      <!--div class="filter uk-width-small@s">
+        <div class="filter-title"><span>State</span></div>
+        <select v-model="filter_success" class="uk-select" @change="applyFilter">
+          <option v-for="state in STATES" :key="state.id" :value="state.id">
+            {{ state.name }}
+          </option>
+        </select>
+      </div-->
       <div v-if="filter_address !== 'null'" class="filter filter-hover uk-width-small@s">
         <div class="filter-title filter-title-small"><span>Addr</span></div>
         <button

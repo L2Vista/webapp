@@ -18,6 +18,11 @@ const PROTOCOLS = [
     { name: 'CCIP', id: 'ccip' },
     { name: 'Hyperlane', id: 'hyperlane' },
 ];
+const STATES = [
+    { name: 'All', id: '0' },
+    { name: 'Success', id: '1' },
+    { name: 'Pending', id: '2' },
+];
 
 let logArray = [];
 
@@ -124,4 +129,4 @@ function sleep(sec) {
     return new Promise(resolve => setTimeout(resolve, sec * 1000));
 }
 
-export { NUM_OF_LOGS, NUM_OF_PAGE, CHAINS, PROTOCOLS, getLogArray, getExplorerUrl, getDateTime, getChainID, getProtocolName, getCurrentDateTime, sleep };
+export { NUM_OF_LOGS, NUM_OF_PAGE, CHAINS, PROTOCOLS, STATES, getLogArray, getExplorerUrl, getDateTime, getChainID, getProtocolName, getCurrentDateTime, sleep };
