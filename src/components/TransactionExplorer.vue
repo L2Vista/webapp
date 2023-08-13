@@ -13,7 +13,12 @@ import {
   PROTOCOLS,
   STATES,
 } from "../assets/explorer.js";
-import { RPC_ENDPOINT, AI_RPC_ENDPOINT, PHISHING_RPC_ENDPOINT, DEV } from "../assets/env.js";
+import {
+  RPC_ENDPOINT,
+  AI_RPC_ENDPOINT,
+  PHISHING_RPC_ENDPOINT,
+  DEV,
+} from "../assets/env.js";
 import axios from "axios";
 
 export default {
@@ -32,7 +37,7 @@ export default {
       filter_from: "null",
       filter_protocol: "null",
       filter_to: "null",
-      filter_success: "0", /* 0, 1, 2 */
+      filter_success: "0" /* 0, 1, 2 */,
       filter_address: "null",
       filter_hash: "null",
 
@@ -417,13 +422,44 @@ export default {
       </div>
     </div>
     <div class="table uk-overflow-auto">
-      <div class="update-indicator">
+      <div v-if="logArray.length > 0" class="update-indicator">
         <span>🕙 LAST UPDATED: </span><span v-text="last_updated" />
       </div>
       <div v-if="loading" class="main-spinner">
         <div uk-spinner="ratio: 3"></div>
       </div>
-      <table v-if="!loading" class="uk-table uk-table-hover uk-table-divider">
+      <div v-if="logArray.length === 0" class="troubleshooting">
+        <div>
+          <h3>⚠️ Insecure Content Setting</h3>
+          <p>
+            For our demo website, we communicate with our API server and AI engine using
+            the HTTP protocol.<br />
+            However, due to security concerns, certain browsers (e.g., Chrome) restrict
+            HTTP communication on HTTPS pages.
+          </p>
+          <p>
+            To access our explorer demo site at https://l2vista.web.app/,<br />
+            you may need to permit "Insecure content" in the site settings. Here's how:
+          </p>
+          <div class="uk-text-center">
+            <img src="/setting/1.png" style="width: 400px" />
+          </div>
+          <p>
+            1. ⚠️ Click on the "Not Secure" label in the address bar.<br />
+            2. ⚙️ Navigate to "Site Settings".<br />
+            3. 🔓 Set "Insecure content" to "Allow".<br />
+            4. 🔄 Refresh the webpage.<br />
+            <span style="color: rgb(122, 122, 122)">
+              *Please note: Allowing insecure content can pose potential security risks.
+              Only make this change if you trust the source.</span
+            >
+          </p>
+        </div>
+      </div>
+      <table
+        v-if="!loading && logArray.length > 0"
+        class="uk-table uk-table-hover uk-table-divider"
+      >
         <thead>
           <tr>
             <th class="uk-width-small">Timestamp</th>
@@ -481,7 +517,7 @@ export default {
         </tbody>
       </table>
     </div>
-    <div v-if="!loading" class="page-container">
+    <div v-if="!loading && logArray.length > 0" class="page-container">
       <div>
         <span v-if="page_current_index > 0" class="movepage" @click="moveTo(page_first)"
           >&lt;&lt;</span
@@ -517,6 +553,9 @@ export default {
 </template>
 
 <style scoped>
+.troubleshooting {
+  font-size: 0.8rem;
+}
 .searchbar-container {
   position: relative;
 }
