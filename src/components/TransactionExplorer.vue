@@ -45,6 +45,8 @@ export default {
       search_text: "",
       loading: false,
       last_updated: "",
+
+      initial_load: false,
     };
   },
   mounted() {
@@ -101,6 +103,7 @@ export default {
         this.filter_success
       );
       this.last_updated = await getCurrentDateTime();
+      this.initial_load = true;
     },
     async loadLogs(
       amount,
@@ -429,7 +432,7 @@ export default {
       <div v-if="loading" class="main-spinner">
         <div uk-spinner="ratio: 3"></div>
       </div>
-      <div v-if="logArray.length === 0" class="troubleshooting">
+      <div v-if="initial_load && logArray.length === 0" class="troubleshooting">
         <div>
           <h3>⚠️ Insecure Content Setting</h3>
           <p>
