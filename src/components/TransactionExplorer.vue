@@ -203,7 +203,7 @@ export default {
           // 실패했을 경우
           console.error("getCount fail (1) ", res);
           console.error("Try again");
-          await axios
+          return await axios
             .get(request)
             .then((res) => {
               // 성공했을 경우
@@ -217,8 +217,6 @@ export default {
               this.load_error = true;
               return 0;
             });
-
-          return 0;
         });
     },
     async checkPhishing(addrList) {
