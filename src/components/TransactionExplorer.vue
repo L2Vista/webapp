@@ -113,7 +113,7 @@ export default {
       if (hash !== "null") request += "&hash=" + hash;
       if (protocol !== "null") request += "&category=" + protocol;
       if (address !== "null") request += "&address=" + address;
-      if (success !== "null") request += "&success=" + success;
+      if (success !== "null" && success !== "0") request += "&success=" + success;
       if (DEV) console.log("request ", request);
       this.loading = true;
       await sleep(forcedLatency);
@@ -182,7 +182,7 @@ export default {
       if (hash !== "null") request += "&hash=" + hash;
       if (protocol !== "null") request += "&category=" + protocol;
       if (address !== "null") request += "&address=" + address;
-      if (success !== "null") request += "&success=" + success;
+      if (success !== "null" && success !== "0") request += "&success=" + success;
       return await axios
         .get(request)
         .then((res) => {
@@ -194,7 +194,7 @@ export default {
           // 실패했을 경우
           console.error("load history 실패 ", res);
 
-          console.errer("Try again");
+          console.error("Try again");
           await axios
             .get(request)
             .then((res) => {
