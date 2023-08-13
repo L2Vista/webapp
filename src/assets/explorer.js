@@ -1,4 +1,5 @@
 const NUM_OF_LOGS = 10; // per page
+const NUM_OF_PAGE = 10;
 const CHAINS = [
     { name: 'Base', id: '84531' },
     { name: 'Mode', id: '919' },
@@ -71,4 +72,4 @@ function getDateTime(t) {
     return year + "-" + month.substr(-2) + "-" + day.substr(-2) + " " + hour.substr(-2) + ":" + minute.substr(-2) + ":" + second.substr(-2);
 }
 
-export { NUM_OF_LOGS, CHAINS, PROTOCOLS, getLogArray, getExplorerUrl, getDateTime, getChainID, getProtocolName };
+export { NUM_OF_LOGS, NUM_OF_PAGE, CHAINS, PROTOCOLS, getLogArray, getExplorerUrl, getDateTime, getChainID, getProtocolName };

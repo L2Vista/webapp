@@ -6,6 +6,7 @@ import {
   getChainID,
   getProtocolName,
   NUM_OF_LOGS,
+  NUM_OF_PAGE,
   CHAINS,
   PROTOCOLS,
 } from "../assets/explorer.js";
@@ -21,7 +22,6 @@ export default {
       logArray: getLogArray(),
       count: 0,
       page_current: 1,
-      page_max: 0,
 
       filter_from: "null",
       filter_protocol: "null",
@@ -36,11 +36,36 @@ export default {
   mounted() {
     this.loadOnMounted();
   },
+  computed: {
+    page_first: function () {
+      return 1;
+    },
+    page_last: function () {
+      return Math.ceil(this.count / NUM_OF_LOGS);
+    },
+    page_last_index: function () {
+      return Math.ceil(this.page_last / NUM_OF_PAGE) - 1;
+    },
+    page_current_index: function () {
+      return Math.ceil(this.page_current / NUM_OF_PAGE) - 1;
+    },
+    page_prev: function () {
+      return (this.page_current_index + 1) * NUM_OF_PAGE + 1;
+    },
+    page_next: function () {
+      return (this.page_current_index + 1) * NUM_OF_PAGE + 1;
+    },
+    page_min: function () {
+      return this.page_current_index * NUM_OF_PAGE;
+    },
+    page_max: function () {
+      return Math.min((this.page_current_index + 1) * NUM_OF_PAGE, this.page_last);
+    },
+  },
   methods: {
     async loadOnMounted() {
       await this.loadLogs(NUM_OF_LOGS, (this.page_current - 1) * NUM_OF_LOGS);
       this.count = await this.getCount();
-      this.page_max = Math.ceil(this.count / NUM_OF_LOGS);
     },
     async loadLogs(
       amount,
@@ -117,6 +142,7 @@ export default {
         });
     },
     async moveTo(page) {
+      console.log("moveto", page);
       this.page_current = page;
       await this.loadLogs(NUM_OF_LOGS, (page - 1) * NUM_OF_LOGS);
     },
@@ -146,7 +172,6 @@ export default {
         this.filter_protocol,
         this.filter_address
       );
-      this.page_max = Math.ceil(this.count / NUM_OF_LOGS);
     },
     async clearAddrFilter() {
       this.filter_address = "null";
@@ -287,15 +312,19 @@ export default {
             <td>{{ log.timestamp }}</td>
             <td>
               <a :href="` ${getExplorerUrl(log.fromchain) + log.from} `" target="_blank">
-                <img class="icon" :src="`/chain/${log.fromchain}.png`" onerror="this.src=''" />{{
-                  getShortAddr(log.from)
-                }}
+                <img
+                  class="icon"
+                  :src="`/chain/${log.fromchain}.png`"
+                  onerror="this.src=''"
+                />{{ getShortAddr(log.from) }}
               </a>
             </td>
             <td>
-              <img class="icon" :src="`/protocol/${log.protocol}.png`" onerror="this.src=''" />{{
-                getProtocolName(log.protocol)
-              }}
+              <img
+                class="icon"
+                :src="`/protocol/${log.protocol}.png`"
+                onerror="this.src=''"
+              />{{ getProtocolName(log.protocol) }}
             </td>
             <td>
               <a
@@ -324,15 +353,36 @@ export default {
       </table>
     </div>
     <div v-if="!loading" class="page-container">
-      <div class="page" v-for="index in page_max" :key="index">
-        <span
-          class="page-span"
-          :class="{ activepage: index === page_current }"
-          @click="moveTo(index)"
+      <div>
+        <span v-if="page_current_index > 0" class="movepage" @click="moveTo(page_first)"
+          >&lt;&lt;</span
         >
-          {{ index }}
-        </span>
+        <span v-if="page_current_index > 0" class="movepage" @click="moveTo(page_prev)"
+          >&lt;</span
+        >
+        <div class="page" v-for="index in page_max - page_min" :key="index">
+          <span
+            class="page-span"
+            :class="{ activepage: index + page_min === page_current }"
+            @click="moveTo(index + page_min)"
+          >
+            {{ index + page_min }}
+          </span>
+        </div>
+        <span
+          v-if="page_current_index < page_last_index"
+          class="movepage"
+          @click="moveTo(page_next)"
+          >&gt;</span
+        >
+        <span
+          v-if="page_current_index < page_last_index"
+          class="movepage"
+          @click="moveTo(page_last)"
+          >&gt;&gt;</span
+        >
       </div>
+      <span class="page-indicator">{{ page_current }} of {{ page_last }}</span>
     </div>
   </div>
 </template>
@@ -416,13 +466,14 @@ export default {
   font-weight: 500;
 }
 .page-container {
-  padding: 0px 20px 0px 20px;
   height: 50px;
-  padding: 15px;
+  padding: 10px;
   text-align: center;
 }
 
 .page {
+  margin: 2px;
+  font-size: 0.8rem;
   padding: 5px;
   display: inline;
 }
@@ -430,8 +481,19 @@ export default {
   cursor: pointer;
   text-decoration: underline;
 }
+.movepage {
+  margin: 2px;
+  cursor: pointer;
+}
+
+.movepage:hover {
+  font-weight: 600;
+}
 .activepage {
   font-weight: 600;
+}
+.page-indicator {
+  opacity: 0.5;
 }
 
 input {
@@ -447,6 +509,7 @@ input {
 input::placeholder {
   color: var(--vt-c-black-soft);
   font-family: "Poppins", sans-serif;
+  opacity: 0.7;
 }
 
 textarea:focus,
