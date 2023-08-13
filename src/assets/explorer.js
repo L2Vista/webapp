@@ -61,8 +61,7 @@ function getExplorerUrl(chainid) {
     return "";
 }
 
-function getDateTime(t) {
-    var date = new Date(t * 1000);
+function getDateTimeStr(date) {
     var year = date.getFullYear();
     var month = "0" + (date.getMonth() + 1);
     var day = "0" + date.getDate();
@@ -72,4 +71,18 @@ function getDateTime(t) {
     return year + "-" + month.substr(-2) + "-" + day.substr(-2) + " " + hour.substr(-2) + ":" + minute.substr(-2) + ":" + second.substr(-2);
 }
 
-export { NUM_OF_LOGS, NUM_OF_PAGE, CHAINS, PROTOCOLS, getLogArray, getExplorerUrl, getDateTime, getChainID, getProtocolName };
+function getDateTime(t) {
+    var date = new Date(t * 1000);
+    return getDateTimeStr(date)
+}
+
+function getCurrentDateTime() {
+    var currentdate = new Date();
+    return getDateTimeStr(currentdate);
+}
+
+function sleep(sec) {
+    return new Promise(resolve => setTimeout(resolve, sec * 1000));
+}
+
+export { NUM_OF_LOGS, NUM_OF_PAGE, CHAINS, PROTOCOLS, getLogArray, getExplorerUrl, getDateTime, getChainID, getProtocolName, getCurrentDateTime, sleep };

@@ -5,6 +5,8 @@ import {
   getDateTime,
   getChainID,
   getProtocolName,
+  getCurrentDateTime,
+  sleep,
   NUM_OF_LOGS,
   NUM_OF_PAGE,
   CHAINS,
@@ -31,10 +33,14 @@ export default {
 
       search_text: "",
       loading: false,
+      last_updated: "",
     };
   },
   mounted() {
     this.loadOnMounted();
+    this.timer = setInterval(() => {
+      this.loadOnMounted(0.5);
+    }, 60000);
   },
   computed: {
     page_first: function () {
@@ -63,9 +69,10 @@ export default {
     },
   },
   methods: {
-    async loadOnMounted() {
-      await this.loadLogs(NUM_OF_LOGS, (this.page_current - 1) * NUM_OF_LOGS);
-      this.count = await this.getCount();
+    async loadOnMounted(forcedLatency = 0) {
+      await this.loadLogs(NUM_OF_LOGS, (this.page_current - 1) * NUM_OF_LOGS, this.filter_to, this.filter_from, this.filter_hash, this.filter_protocol, this.filter_address, forcedLatency);
+      this.count = await this.getCount(this.filter_to, this.filter_from, this.filter_hash, this.filter_protocol, this.filter_address);
+      this.last_updated = await getCurrentDateTime();
     },
     async loadLogs(
       amount,
@@ -74,7 +81,8 @@ export default {
       fromchain = "null",
       hash = "null",
       protocol = "null",
-      address = "null"
+      address = "null",
+      forcedLatency = 0,
     ) {
       let request = RPC_ENDPOINT + "tx?amount=" + amount + "&skip=" + skip;
       if (tochain !== "null") request += "&tochain=" + tochain;
@@ -83,6 +91,7 @@ export default {
       if (protocol !== "null") request += "&category=" + protocol;
       if (address !== "null") request += "&address=" + address;
       this.loading = true;
+      await sleep(forcedLatency);
       await axios
         .get(request)
         .then((res) => {
@@ -297,6 +306,9 @@ export default {
       </div>
     </div>
     <div class="table uk-overflow-auto">
+      <div class="update-indicator">
+        <span>🕙 LAST UPDATED: </span><span v-text="last_updated" />
+      </div>
       <div v-if="loading" class="main-spinner">
         <div uk-spinner="ratio: 3"></div>
       </div>
@@ -549,6 +561,13 @@ input:focus {
   padding: 20px 10px 10px 10px;
   /*box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.1);*/
   color: var(--vt-c-black-soft);
+}
+.uk-table {
+  margin-top: 0px;
+}
+.update-indicator {
+  padding-left: 12px;
+  color: rgb(106, 106, 106);
 }
 
 th {
