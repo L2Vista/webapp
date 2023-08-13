@@ -181,9 +181,24 @@ export default {
           //console.log("getCount 성공", res);
           return res.data.data;
         })
-        .catch((res) => {
+        .catch(async (res) => {
           // 실패했을 경우
           console.error("load history 실패 ", res);
+
+          console.errer("Try again");
+          await axios
+            .get(request)
+            .then((res) => {
+              // 성공했을 경우
+              //console.log("getCount 성공", res);
+              return res.data.data;
+            })
+            .catch((res) => {
+              // 실패했을 경우
+              console.error("load history 실패 ", res);
+              return 0;
+            });
+
           return 0;
         });
     },

@@ -1,29 +1,16 @@
-# vue-project
+# L2Vista Demo Page
 
-This template should help get you started developing with Vue 3 in Vite.
+🌐 [https://l2vista.web.app/](https://l2vista.web.app/)
 
-## Recommended IDE Setup
+# Insecure Content Setting
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+For our demo website, we communicate with our API server and AI engine using the HTTP protocol. However, due to security concerns, certain browsers (e.g., Chrome) restrict HTTP communication on HTTPS pages.
 
-## Customize configuration
+To access our explorer demo site at [https://l2vista.web.app/](https://l2vista.web.app/), you may need to permit "Insecure content" in the site settings. Here's how:
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+1. ⚠️ Click on the "Not Secure" label in the address bar.
+2. ⚙️ Navigate to "Site Settings".
+3. 🔓 Set "Insecure content" to "Allow".
+4. 🔄 Refresh the webpage.
 
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
+> **Please note:** Allowing insecure content can pose potential security risks. Only make this change if you trust the source.
