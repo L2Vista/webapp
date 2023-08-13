@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "axios": "^1.4.0",
+    "uikit": "^3.16.24",
     "vue": "^3.3.4"
   },
   "devDependencies": {

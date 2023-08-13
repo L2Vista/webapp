@@ -19,6 +19,7 @@ import {
   PHISHING_RPC_ENDPOINT,
   DEV,
 } from "../assets/env.js";
+import UIkit from 'uikit';
 import axios from "axios";
 
 export default {
