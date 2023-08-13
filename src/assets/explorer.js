@@ -12,7 +12,7 @@ const CHAINS = [
     { name: 'Goerli', id: '5' },
     { name: 'Celo', id: '44787' },
     { name: 'Arbitrum', id: '421613' },
-    { name: 'Mumbai', id: '80001' },
+    { name: 'Polygon', id: '80001' },
 ];
 const PROTOCOLS = [
     { name: 'CCIP', id: 'ccip' },
@@ -97,7 +97,7 @@ function getExplorerUrl(chainid) {
         case '421613':
             return "https://testnet.arbiscan.io/tx/";
 
-        // Mumbai
+        // Polygon
         case '80001':
             return "https://mumbai.polygonscan.com/tx/";
     }
