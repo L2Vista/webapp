@@ -315,7 +315,7 @@ export default {
                 <img
                   class="icon"
                   :src="`/chain/${log.fromchain}.png`"
-                  onerror="this.src=''"
+                  onerror="this.src='/chain/error.png'"
                 />{{ getShortAddr(log.from) }}
               </a>
             </td>
@@ -323,7 +323,7 @@ export default {
               <img
                 class="icon"
                 :src="`/protocol/${log.protocol}.png`"
-                onerror="this.src=''"
+                onerror="this.src='/protocol/error.png'"
               />{{ getProtocolName(log.protocol) }}
             </td>
             <td>
