@@ -12,7 +12,7 @@ import {
   CHAINS,
   PROTOCOLS,
 } from "../assets/explorer.js";
-import { RPC_ENDPOINT, AI_RPC_ENDPOINT } from "../assets/env.js";
+import { RPC_ENDPOINT, AI_RPC_ENDPOINT, PHISHING_RPC_ENDPOINT } from "../assets/env.js";
 import axios from "axios";
 
 export default {
@@ -112,11 +112,16 @@ export default {
       await sleep(forcedLatency);
       await axios
         .get(request)
-        .then((res) => {
-          if (!res.status) console.error("load history 실패 ", res);
+        .then(async (res) => {
+          if (!res.data.status) {
+            console.error("load history 실패 ", res);
+            return;
+          }
           // 성공했을 경우
           console.log("load history 성공", res);
           this.logArray = []; // Clear
+          let phishingAddrList = [];
+
           for (let i = 0; i < res.data.data.txRequested.length; i++) {
             let log = res.data.data.txRequested[i];
             let timestamp = log.from ? log.from.timestamp : 0;
@@ -126,9 +131,6 @@ export default {
             let tochain = log.to ? log.to.chain : 0;
             let protocol = log.category ? log.category : "";
             let state = log.to.hash ? "success" : "pending";
-            let sender = log.sender ? log.sender : "";
-            let recipient = log.recipient ? log.recipient : "";
-
             this.logArray.push({
               timestamp: getDateTime(timestamp),
               from: from,
@@ -137,10 +139,19 @@ export default {
               tochain: tochain,
               protocol: protocol,
               state: state,
-              sender: sender,
-              recipient: recipient,
             });
+
+            // for phishing check
+            let addrList = [];
+            if (log.from && log.from.from) addrList.push(log.from.from);
+            if (log.from && log.from.to) addrList.push(log.from.to);
+            if (log.to && log.to.from) addrList.push(log.to.from);
+            if (log.to && log.to.to) addrList.push(log.to.to);
+            phishingAddrList.push(addrList);
           }
+
+          // get phishingArray
+          await this.checkPhishing(phishingAddrList);
           this.loading = false;
         })
         .catch((res) => {
@@ -174,6 +185,33 @@ export default {
           // 실패했을 경우
           console.error("load history 실패 ", res);
           return 0;
+        });
+    },
+    async checkPhishing(addrList) {
+      console.log("chechPhishing : ", addrList);
+      await axios
+        .post(
+          PHISHING_RPC_ENDPOINT + "check",
+          { lists_of_addresses: addrList },
+          {
+            header: {
+              "Context-Type": "application/json",
+            },
+          }
+        )
+        .then(async (res) => {
+          // 성공했을 경우
+          console.log("checkPhishing 성공", res);
+          for (let i = 0; i < res.data.results.length; i++) {
+            if (res.data.results[i] === "phishing") {
+              this.logArray[i].state = "danger";
+            }
+          }
+        })
+        .catch((res) => {
+          // 실패했을 경우
+          this.typing = false;
+          console.error("실패 ", res);
         });
     },
     async moveTo(page) {
@@ -396,6 +434,7 @@ export default {
               <span
                 class="uk-label"
                 :class="{
+                  danger: log.state === 'danger',
                   success: log.state === 'success',
                   pending: log.state === 'pending',
                 }"
@@ -631,6 +670,10 @@ th {
 }
 .pending {
   background-color: #faa05a;
+  color: #fff;
+}
+.danger {
+  background-color: #f0506e;
   color: #fff;
 }
 </style>
