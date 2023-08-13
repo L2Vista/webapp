@@ -107,7 +107,7 @@ export default {
       if (hash !== "null") request += "&hash=" + hash;
       if (protocol !== "null") request += "&category=" + protocol;
       if (address !== "null") request += "&address=" + address;
-      console.log("request ", request);
+      //console.log("request ", request);
       this.loading = true;
       await sleep(forcedLatency);
       await axios
@@ -118,7 +118,7 @@ export default {
             return;
           }
           // 성공했을 경우
-          console.log("load history 성공", res);
+          //console.log("load history 성공", res);
           this.logArray = []; // Clear
           let phishingAddrList = [];
 
@@ -188,7 +188,7 @@ export default {
         });
     },
     async checkPhishing(addrList) {
-      console.log("chechPhishing : ", addrList);
+      //console.log("chechPhishing : ", addrList);
       await axios
         .post(
           PHISHING_RPC_ENDPOINT + "check",
@@ -201,7 +201,7 @@ export default {
         )
         .then(async (res) => {
           // 성공했을 경우
-          console.log("checkPhishing 성공", res);
+          //console.log("checkPhishing 성공", res);
           for (let i = 0; i < res.data.results.length; i++) {
             if (res.data.results[i] === "phishing") {
               this.logArray[i].state = "danger";
@@ -269,7 +269,7 @@ export default {
       await this.applyFilter();
     },
     async postMsg(msg) {
-      console.log("postMsg", msg);
+      //console.log("postMsg", msg);
       this.loading = true;
       await axios
         .post(
@@ -283,7 +283,7 @@ export default {
         )
         .then(async (res) => {
           // 성공했을 경우
-          console.log("postMsg 성공", res);
+          //console.log("postMsg 성공", res);
           let answer = res.data.ai_output;
           let parsed = res.data.parsed;
           this.filter_from = getChainID(parsed[0]);
