@@ -4,6 +4,7 @@ const CHAINS = [
     { name: 'Mode', id: '919' },
     { name: 'Optimism', id: '420' },
     { name: 'Zora', id: '999' },
+    { name: 'Sepolia', id: '11155111' }
 ];
 const PROTOCOLS = [
     { name: 'CCIP', id: 'ccip' },

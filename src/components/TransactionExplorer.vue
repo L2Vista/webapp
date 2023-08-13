@@ -287,13 +287,13 @@ export default {
             <td>{{ log.timestamp }}</td>
             <td>
               <a :href="` ${getExplorerUrl(log.fromchain) + log.from} `" target="_blank">
-                <img class="icon" :src="`/chain/${log.fromchain}.png`" />{{
+                <img class="icon" :src="`/chain/${log.fromchain}.png`" onerror="this.src=''" />{{
                   getShortAddr(log.from)
                 }}
               </a>
             </td>
             <td>
-              <img class="icon" :src="`/protocol/${log.protocol}.png`" />{{
+              <img class="icon" :src="`/protocol/${log.protocol}.png`" onerror="this.src=''" />{{
                 getProtocolName(log.protocol)
               }}
             </td>
