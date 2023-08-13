@@ -1,8 +1,8 @@
-## L2Vista Demo Page
+# L2Vista Demo Page
 
 🌐 [https://l2vista.web.app/](https://l2vista.web.app/)
 
-### Insecure Content Setting
+# Insecure Content Setting
 
 For our demo website, we communicate with our API server and AI engine using the HTTP protocol. However, due to security concerns, certain browsers (e.g., Chrome) restrict HTTP communication on HTTPS pages.
 
