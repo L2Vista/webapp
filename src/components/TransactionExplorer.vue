@@ -51,7 +51,7 @@ export default {
     this.loadOnMounted();
     this.timer = setInterval(() => {
       this.loadOnMounted(0.5);
-    }, 60000);
+    }, 30000);
   },
   computed: {
     page_first: function () {
