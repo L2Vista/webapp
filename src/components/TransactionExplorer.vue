@@ -82,6 +82,7 @@ export default {
       if (hash !== "null") request += "&hash=" + hash;
       if (protocol !== "null") request += "&category=" + protocol;
       if (address !== "null") request += "&address=" + address;
+      this.loading = true;
       await axios
         .get(request)
         .then((res) => {
@@ -109,11 +110,14 @@ export default {
               state: state,
             });
           }
+          this.loading = false;
         })
         .catch((res) => {
           // 실패했을 경우
           console.error("load history 실패 ", res);
+          this.loading = false;
         });
+      this.loading = false;
     },
     async getCount(
       tochain = "null",
@@ -142,7 +146,6 @@ export default {
         });
     },
     async moveTo(page) {
-      console.log("moveto", page);
       this.page_current = page;
       await this.loadLogs(NUM_OF_LOGS, (page - 1) * NUM_OF_LOGS);
     },
@@ -300,11 +303,11 @@ export default {
       <table v-if="!loading" class="uk-table uk-table-hover uk-table-divider">
         <thead>
           <tr>
-            <th>Timestamp</th>
-            <th>From</th>
-            <th>Protocol</th>
-            <th>To</th>
-            <th>State</th>
+            <th class="uk-width-small">Timestamp</th>
+            <th class="uk-width-small">From</th>
+            <th class="uk-width-small">Protocol</th>
+            <th class="uk-width-small">To</th>
+            <th class="uk-width-small">State</th>
           </tr>
         </thead>
         <tbody>
