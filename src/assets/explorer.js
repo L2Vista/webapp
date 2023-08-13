@@ -7,6 +7,11 @@ const CHAINS = [
     { name: 'Zora', id: '999' },
     { name: 'Sepolia', id: '11155111' },
     { name: 'BNB', id: '97' },
+    { name: 'Avalanche', id: '43113' },
+    { name: 'Moonbase', id: '1287' },
+    { name: 'Goerli', id: '5' },
+    { name: 'Celo', id: '44787' },
+    { name: 'Arbitrum', id: '421613' },
 ];
 const PROTOCOLS = [
     { name: 'CCIP', id: 'ccip' },
@@ -61,10 +66,30 @@ function getExplorerUrl(chainid) {
         // sepolia
         case '11155111':
             return "https://sepolia.etherscan.io/tx/";
-        
+
         // bnb
         case '97':
             return "https://testnet.bscscan.com/tx/";
+
+        // avalanche
+        case '43113':
+            return "https://testnet.snowtrace.io/tx/";
+
+        // moonbase
+        case '1287':
+            return "https://moonbase.moonscan.io/tx/";
+
+        // Goerli
+        case '5':
+            return "https://goerli.etherscan.io/tx/";
+
+        // Celo
+        case '44787':
+            return "https://alfajores.celoscan.io/tx/";
+
+        // Arbitrum
+        case '421613':
+            return "https://testnet.arbiscan.io/tx/";
     }
 
     return "";
