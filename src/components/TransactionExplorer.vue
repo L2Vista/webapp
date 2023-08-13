@@ -329,9 +329,9 @@ export default {
           this.filter_protocol = parsed[2];
           this.filter_address = parsed[3];
           this.filter_hash = parsed[4];
-          this.loading = false;
           await this.applyFilter();
           UIkit.notification("🙂 " + answer, { pos: "top-right" });
+          this.loading = false;
         })
         .catch((res) => {
           // 실패했을 경우
