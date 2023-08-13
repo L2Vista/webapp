@@ -46,7 +46,7 @@ export default {
       loading: false,
       last_updated: "",
 
-      initial_load: false,
+      load_error: false,
     };
   },
   mounted() {
@@ -83,6 +83,14 @@ export default {
   },
   methods: {
     async loadOnMounted(forcedLatency = 0) {
+      this.count = await this.getCount(
+        this.filter_to,
+        this.filter_from,
+        this.filter_hash,
+        this.filter_protocol,
+        this.filter_address,
+        this.filter_success
+      );
       await this.loadLogs(
         NUM_OF_LOGS,
         (this.page_current - 1) * NUM_OF_LOGS,
@@ -94,16 +102,7 @@ export default {
         this.filter_success,
         forcedLatency
       );
-      this.count = await this.getCount(
-        this.filter_to,
-        this.filter_from,
-        this.filter_hash,
-        this.filter_protocol,
-        this.filter_address,
-        this.filter_success
-      );
       this.last_updated = await getCurrentDateTime();
-      this.initial_load = true;
     },
     async loadLogs(
       amount,
@@ -197,23 +196,25 @@ export default {
         .then((res) => {
           // 성공했을 경우
           //if (DEV) console.log("getCount success", res);
+          this.load_error = false;
           return res.data.data;
         })
         .catch(async (res) => {
           // 실패했을 경우
-          console.error("load history 실패 ", res);
-
+          console.error("getCount fail (1) ", res);
           console.error("Try again");
           await axios
             .get(request)
             .then((res) => {
               // 성공했을 경우
               //if (DEV) console.log("getCount success", res);
+              this.load_error = false;
               return res.data.data;
             })
             .catch((res) => {
               // 실패했을 경우
-              console.error("getCount fail ", res);
+              console.error("getCount fail (2)", res);
+              this.load_error = true;
               return 0;
             });
 
@@ -249,9 +250,7 @@ export default {
     },
     async moveTo(page) {
       this.page_current = page;
-      await this.loadLogs(
-        NUM_OF_LOGS,
-        (this.page_current - 1) * NUM_OF_LOGS,
+      this.count = await this.getCount(
         this.filter_to,
         this.filter_from,
         this.filter_hash,
@@ -259,7 +258,9 @@ export default {
         this.filter_address,
         this.filter_success
       );
-      this.count = await this.getCount(
+      await this.loadLogs(
+        NUM_OF_LOGS,
+        (this.page_current - 1) * NUM_OF_LOGS,
         this.filter_to,
         this.filter_from,
         this.filter_hash,
@@ -278,9 +279,7 @@ export default {
     },
     async applyFilter() {
       this.page_current = 1;
-      await this.loadLogs(
-        NUM_OF_LOGS,
-        (this.page_current - 1) * NUM_OF_LOGS,
+      this.count = await this.getCount(
         this.filter_to,
         this.filter_from,
         this.filter_hash,
@@ -288,7 +287,9 @@ export default {
         this.filter_address,
         this.filter_success
       );
-      this.count = await this.getCount(
+      await this.loadLogs(
+        NUM_OF_LOGS,
+        (this.page_current - 1) * NUM_OF_LOGS,
         this.filter_to,
         this.filter_from,
         this.filter_hash,
@@ -426,13 +427,13 @@ export default {
       </div>
     </div>
     <div class="table uk-overflow-auto">
-      <div v-if="logArray.length > 0" class="update-indicator">
+      <div v-if="!load_error" class="update-indicator">
         <span>🕙 LAST UPDATED: </span><span v-text="last_updated" />
       </div>
       <div v-if="loading" class="main-spinner">
         <div uk-spinner="ratio: 3"></div>
       </div>
-      <div v-if="initial_load && logArray.length === 0" class="troubleshooting">
+      <div v-if="load_error" class="troubleshooting">
         <div>
           <h3>⚠️ Insecure Content Setting</h3>
           <p>
@@ -461,7 +462,7 @@ export default {
         </div>
       </div>
       <table
-        v-if="!loading && logArray.length > 0"
+        v-if="!loading && !load_error"
         class="uk-table uk-table-hover uk-table-divider"
       >
         <thead>
@@ -521,7 +522,7 @@ export default {
         </tbody>
       </table>
     </div>
-    <div v-if="!loading && logArray.length > 0" class="page-container">
+    <div v-if="!loading && !load_error" class="page-container">
       <div>
         <span v-if="page_current_index > 0" class="movepage" @click="moveTo(page_first)"
           >&lt;&lt;</span
